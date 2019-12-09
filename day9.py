@@ -20,6 +20,12 @@ def resolve_param(n, param, opcode, memory, relative_base):
     if parameter_mode(opcode, n) == 2: # relative mode
         return memory[relative_base + param]
 
+def write_mode(n, value, dest, opcode, memory, relative_base):
+    if parameter_mode(opcode, n) == 2:
+        memory[dest+relative_base] = value
+    else:
+        memory[dest] = value
+
 
 def run(program):
     memory = program
@@ -35,13 +41,15 @@ def run(program):
             param1 = memory[ip+1]
             param2 = memory[ip+2]
             dest = memory[ip+3]
-            memory[dest] = resolve_param(1, param1, opcode, memory, relative_base) + resolve_param(2, param2, opcode, memory, relative_base)
+            value = resolve_param(1, param1, opcode, memory, relative_base) + resolve_param(2, param2, opcode, memory, relative_base)
+            write_mode(3, value, dest, opcode, memory, relative_base)
             ip = ip + 4
         elif(instruction(opcode) == 2): # mul
             param1 = memory[ip+1]
             param2 = memory[ip+2]
             dest = memory[ip+3]
-            memory[dest] = resolve_param(1, param1, opcode, memory, relative_base) * resolve_param(2, param2, opcode, memory, relative_base)
+            value = resolve_param(1, param1, opcode, memory, relative_base) * resolve_param(2, param2, opcode, memory, relative_base)
+            write_mode(3, value, dest, opcode, memory, relative_base)
             ip = ip + 4
         elif(instruction(opcode) == 3): # input
             dest = memory[ip+1]
@@ -49,7 +57,7 @@ def run(program):
                 value=int(input('Input:'))
             except ValueError:
                 print("Not a number")
-            memory[dest] = value
+            write_mode(1, value, dest, opcode, memory, relative_base)
             ip = ip + 2
         elif(instruction(opcode) == 4): # output
             param = memory[ip+1]
@@ -71,13 +79,15 @@ def run(program):
             param1 = memory[ip+1]
             param2 = memory[ip+2]
             dest = memory[ip+3]
-            memory[dest] = 1 if resolve_param(1, param1, opcode, memory, relative_base) < resolve_param(2, param2, opcode, memory, relative_base) else 0
+            value = 1 if resolve_param(1, param1, opcode, memory, relative_base) < resolve_param(2, param2, opcode, memory, relative_base) else 0
+            write_mode(3, value, dest, opcode, memory, relative_base)
             ip = ip + 4
         elif(instruction(opcode) == 8): # greater-than
             param1 = memory[ip+1]
             param2 = memory[ip+2]
             dest = memory[ip+3]
-            memory[dest] = 1 if resolve_param(1, param1, opcode, memory, relative_base) == resolve_param(2, param2, opcode, memory, relative_base) else 0
+            value = 1 if resolve_param(1, param1, opcode, memory, relative_base) == resolve_param(2, param2, opcode, memory, relative_base) else 0
+            write_mode(3, value, dest, opcode, memory, relative_base)
             ip = ip + 4
         elif(instruction(opcode) == 9): # adjust relative base
             param = memory[ip+1]
