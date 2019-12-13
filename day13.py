@@ -29,6 +29,18 @@ def write_mode(n, value, dest, opcode, memory, relative_base):
 
 
 cheat = 0
+segment_display = 0
+height = 22
+width = 50
+screen = []
+
+def x_coord(sym):
+    pos = -1
+    for i in range(height):
+        p = screen[i].find(sym)
+        if p != -1:
+            pos = p
+    return pos
 
 class Intcode(object):
     def __init__(self, program):
@@ -60,18 +72,20 @@ class Intcode(object):
                 self.ip = self.ip + 4
             elif(instruction(opcode) == 3): # input
                 dest = self.memory[self.ip+1]
-                try:
-                    if cheat < 5000:
-                        value = 0
-                        cheat += 1
-                    else:
-                        value=int(input('Input:'))
-                    if value == 5236:
-                        cheat = 0
-                        value = 0
-                except ValueError:
-                    print("Not a number")
+                #value = int(input('Input:'))
+
+                x_star = x_coord("*")
+                x_p = x_coord("P")
+
+                if x_star == x_p:
                     value = 0
+                elif x_star < x_p:
+                    value = -1
+                elif x_star > x_p:
+                    value = 1
+
+#                except ValueError:
+#                    print("Not a number")
                 write_mode(1, value, dest, opcode, self.memory, self.relative_base)
                 self.ip = self.ip + 2
             elif(instruction(opcode) == 4): # output
@@ -122,7 +136,6 @@ class Intcode(object):
 
         output.append(self.run())
         output.append(self.run())
-        print(output)
         return output
 
 
@@ -134,7 +147,6 @@ class Intcode(object):
             o = self.run()
         return output
 
-segment_display = 0
 
 def main():
     global segment_display
@@ -154,27 +166,24 @@ def main():
 
     program[0] = 2  #insert quarted
 
-    height = 22
-    width = 50
 
-    screen = []
+
+    global screen
     for i in range(height):
         screen.append("")
         for j in range(width):
             screen[i] += " "
 
-    while(True):
+    output = computer.run_3()
+    while(output != "EOP"):
+        render(output, screen)
+
+        if segment_display != -1:
+            for i in range(height):
+                print(screen[i])
+
+        print(segment_display)
         output = computer.run_3()
-        while(output != "EOP"):
-            render(output, screen)
-
-            if segment_display != 0:
-                for i in range(height):
-                    print(screen[i])
-                print(segment_display)
-
-            output = computer.run_3()
-        computer.ip = 0
 
 
 def star1(output):
